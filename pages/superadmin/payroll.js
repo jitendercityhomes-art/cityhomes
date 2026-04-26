@@ -6,6 +6,7 @@ import Av from '../../components/shared/Avatar';
 import PayslipModal from '../../components/shared/PayslipModal';
 import { API_BASE, THEME, DEFAULT_SALARY_SETTINGS } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
+import { getAuthHeaders } from '../../lib/auth';
 
 const MONTH_LABELS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -175,14 +176,14 @@ const SuperAdminPayroll = () => {
   const AVAILABLE_MONTHS = generateAvailableMonths();
 
   const fetchPayroll = async () => {
-    if (!user?.token) return;
+    const headers = getAuthHeaders(user);
+    if (!headers.Authorization) return;
     setLoading(true);
     setError('');
     const monthNumber = getMonthNumber(month);
     const year = Number(month.split(' ')[1]);
 
     try {
-      const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` };
 
       // First, try to fetch existing payroll data
       const getRes = await fetch(`${API_BASE}/payroll?month=${monthNumber}&year=${year}`, {
@@ -383,8 +384,7 @@ const SuperAdminPayroll = () => {
   const handleProcessAll = async () => {
     setSyncing(true);
     try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+      const headers = getAuthHeaders(user);
 
       const monthNumber = getMonthNumber(month);
       const year = Number(month.split(' ')[1]);
@@ -443,8 +443,7 @@ const SuperAdminPayroll = () => {
     // If it exists in DB, update it via API
     if (existingPayroll && existingPayroll.id && !String(existingPayroll.id).startsWith('staff-')) {
       try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+        const headers = getAuthHeaders(user);
 
         const res = await fetch(`${API_BASE}/payroll/${existingPayroll.id}`, {
           method: 'PUT',
@@ -548,8 +547,7 @@ const SuperAdminPayroll = () => {
     const markKey = payroll.id || payroll.employee_id;
     setMarking(markKey);
     try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+      const headers = getAuthHeaders(user);
 
       let payrollId = payroll.id;
       if (!payrollId || isNaN(Number(payrollId))) {

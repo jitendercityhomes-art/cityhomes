@@ -3,9 +3,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import Icon from './Icon';
 import { API_BASE } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
+import { getAuthHeaders } from '../../lib/auth';
 
 const AttendanceModal = ({ onClose, userName, geoSettings, currentStatus: initialStatus, branchId, onSuccess }) => {
-  const { triggerRefresh } = useAppContext();
+  const { user, triggerRefresh } = useAppContext();
+  
   const [loading, setLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(true);
   const [currentStatus, setCurrentStatus] = useState(initialStatus || 'out');
@@ -40,7 +42,12 @@ const AttendanceModal = ({ onClose, userName, geoSettings, currentStatus: initia
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await fetch(`${API_BASE}/attendance/today?_t=${Date.now()}`, { credentials: 'include' });
+        const headers = getAuthHeaders(user);
+
+        const res = await fetch(`${API_BASE}/attendance/today?_t=${Date.now()}`, { 
+          credentials: 'include',
+          headers 
+        });
         if (res.ok) {
           const status = await res.json();
           if (status.hasPunchedIn && status.hasPunchedOut) {
@@ -207,9 +214,11 @@ const AttendanceModal = ({ onClose, userName, geoSettings, currentStatus: initia
       const endpoint = type === 'in' ? 'punch-in' : 'punch-out';
       
       try {
+        const headers = getAuthHeaders(user);
+
         const res = await fetch(`${API_BASE}/attendance/${endpoint}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           credentials: 'include',
           body: JSON.stringify({
             lat: lat,

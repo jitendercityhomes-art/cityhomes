@@ -30,14 +30,26 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Security & CORS
-  const allowedOriginPatterns = [
+  const allowedOrigins = [
+    'https://cityhomes-nu.vercel.app',
     /^http:\/\/localhost:\d+$/,
     /^http:\/\/127\.0\.0\.1:\d+$/,
     /^http:\/\/192\.168\.\d{1,3}\.\d{1,3}:\d+$/,
   ];
 
   app.enableCors({
-    origin: ['https://cityhomes-nu.vercel.app', /^http:\/\/localhost:\d+$/],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed = allowedOrigins.some(pattern => {
+        if (pattern instanceof RegExp) return pattern.test(origin);
+        return pattern === origin;
+      });
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Origin,X-Requested-With,Content-Type,Accept,Authorization',

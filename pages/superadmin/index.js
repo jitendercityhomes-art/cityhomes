@@ -5,11 +5,12 @@ import Av from '../../components/shared/Avatar';
 import AddStaffModal from '../../components/shared/AddStaffModal';
 import { THEME, API_BASE } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
+import { getAuthHeaders } from '../../lib/auth';
 import { useRouter } from 'next/router';
 
 const SuperAdminDashboard = () => {
   const router = useRouter();
-  const { globalStaff = [], liveAttendance = [], globalLeaves = [], globalReimb = [], globalBranches = [], selectedBranch, setGlobalStaff, addActivity, fetchInitialData } = useAppContext();
+  const { user, globalStaff = [], liveAttendance = [], globalLeaves = [], globalReimb = [], globalBranches = [], selectedBranch, setGlobalStaff, addActivity, fetchInitialData } = useAppContext();
   const t = THEME.superadmin;
   const [showAddStaff, setShowAddStaff] = useState(false);
 
@@ -45,9 +46,11 @@ const SuperAdminDashboard = () => {
 
   const handleAddStaff = async (data) => {
     try {
+      const headers = getAuthHeaders(user);
+
       const response = await fetch(`${API_BASE}/employees`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify(data),
       });

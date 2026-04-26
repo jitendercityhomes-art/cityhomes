@@ -10,6 +10,7 @@ import BankDetails from "../../../components/employee-detail/BankDetails";
 import RequestsDetail from "../../../components/employee-detail/RequestsDetail";
 import { THEME, API_BASE, DEFAULT_SALARY_SETTINGS } from "../../../lib/constants";
 import { useAppContext } from "../../../context/AppContext";
+import { getAuthHeaders } from "../../../lib/auth";
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -166,9 +167,14 @@ const EmployeeDetail = () => {
     setDeleteError(null);
 
     try {
+      const savedUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userAuth') || '{}') : {};
+      const token = user?.token || savedUser.token || savedUser.access_token;
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const res = await fetch(`${API_BASE}/employees/${employee.id}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include'
       });
       if (!res.ok) {
@@ -236,13 +242,14 @@ const EmployeeDetail = () => {
 
   const loadEmployeeDetails = async (employeeId) => {
     setEmployeeLoading(true);
-    setDepartmentInfo(null);
     try {
+      const headers = getAuthHeaders(user);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
       const res = await fetch(`${API_BASE}/employees/${employeeId}`, {
         method: 'GET',
+        headers,
         credentials: 'include',
         signal: controller.signal,
       });
@@ -291,11 +298,13 @@ const EmployeeDetail = () => {
     const hasResolvedDepartment = employee.department && typeof employee.department === 'object' && employee.department.name && (employee.department.week_off_days !== undefined && employee.department.week_off_days !== null);
     const hasDepartmentId = employee.department_id || (employee.department && employee.department.id);
     if (!hasResolvedDepartment && hasDepartmentId) {
+      const headers = getAuthHeaders(user);
+
       const departmentId = employee.department_id || (employee.department && employee.department.id);
       console.log('STRICT: Fetching department info to get correct week off days for ID:', departmentId);
       fetch(`${API_BASE}/departments/${departmentId}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include'
       })
         .then((res) => res.json())
@@ -332,9 +341,11 @@ const EmployeeDetail = () => {
     if (!employee?.id) return;
     setLoadingAttendance(true);
     try {
+      const headers = getAuthHeaders(user);
+
       const res = await fetch(`${API_BASE}/attendance/employee/${employee.id}?month=${selectedMonth + 1}&year=${selectedYear}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include'
       });
       if (res.ok) {
@@ -358,11 +369,13 @@ const EmployeeDetail = () => {
     if (!employee?.id) return;
     setLoadingCycleSummary(true);
     try {
+      const headers = getAuthHeaders(user);
+
       const cycleStartDay = salarySettings?.cycleStart || DEFAULT_SALARY_SETTINGS.cycleStart;
       const { startDate, endDate } = getCycleRange(selectedMonth + 1, selectedYear, cycleStartDay);
       const res = await fetch(`${API_BASE}/attendance/summary?employeeId=${employee.id}&startDate=${startDate}&endDate=${endDate}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include'
       });
       if (res.ok) {
@@ -384,9 +397,11 @@ const EmployeeDetail = () => {
     setSalaryLoading(true);
     setSalaryError(null);
     try {
+      const headers = getAuthHeaders(user);
+
       const res = await fetch(`${API_BASE}/salary/${employeeId}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
       });
       if (!res.ok) {
@@ -831,12 +846,14 @@ const EmployeeDetail = () => {
     console.log('Saving attendance for day:', day, 'status:', status, 'requestBody:', requestBody);
 
     const dateKey = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const savedUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userAuth') || '{}') : {};
+    const token = user?.token || savedUser.token || savedUser.access_token;
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const res = await fetch(`${API_BASE}/attendance/employee/${employee.id}/date/${dateKey}`, {
       method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${user?.token}`
-      },
+      headers,
       credentials: 'include',
       body: JSON.stringify(requestBody)
     });

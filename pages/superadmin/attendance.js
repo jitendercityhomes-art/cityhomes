@@ -5,6 +5,7 @@ import Icon from '../../components/shared/Icon';
 import Av from '../../components/shared/Avatar';
 import { THEME, API_BASE } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
+import { getAuthHeaders } from '../../lib/auth';
 import { useRouter } from 'next/router';
 
 const SuperAdminAttendance = () => {
@@ -40,7 +41,11 @@ const SuperAdminAttendance = () => {
     setLoading(true);
     try {
       const dateStr = selectedDate.toISOString().split('T')[0];
-      const res = await fetch(`${API_BASE}/attendance/live?date=${dateStr}`, { credentials: 'include' });
+      const headers = getAuthHeaders(user);
+      const res = await fetch(`${API_BASE}/attendance/live?date=${dateStr}`, { 
+        credentials: 'include',
+        headers
+      });
       if (res.ok) {
         const data = await res.json();
         const list = data.employees || [];

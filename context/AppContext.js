@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { DEFAULT_SALARY_SETTINGS, DEFAULT_GEO, API_BASE } from '../lib/constants';
-import { normalizeUserRole } from '../lib/auth';
+import { normalizeUserRole, getAuthHeaders } from '../lib/auth';
 
 const normalizeHolidayKey = (date) => {
   if (!date || typeof date !== 'string') return '';
@@ -160,8 +160,7 @@ export const AppProvider = ({ children }) => {
 
       // Also fetch current user's full profile to get phone, department, etc.
       try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const headers = getAuthHeaders(user);
         const profileRes = await fetch(`${API_BASE}/employees/profile`, { credentials: 'include', headers });
         if (profileRes.ok) {
           const profileData = await profileRes.json();
@@ -187,8 +186,7 @@ export const AppProvider = ({ children }) => {
       }
 
       try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const headers = getAuthHeaders(user);
 
         const [salaryRes, holidayRes] = await Promise.all([
           fetch(`${API_BASE}/settings/salary`, { credentials: 'include', headers }),
@@ -248,12 +246,8 @@ export const AppProvider = ({ children }) => {
   }, [user?.email, user?.token]);
 
   const refreshSettings = useCallback(async () => {
-    const savedUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userAuth') || '{}') : {};
-    const token = user?.token || savedUser.token || savedUser.access_token;
-    if (!token) return;
-
     try {
-      const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+      const headers = getAuthHeaders(user);
       
       // Fetch settings and profile in parallel for 100% sync
       const [salaryRes, holidayRes, profileRes] = await Promise.all([

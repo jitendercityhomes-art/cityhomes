@@ -2,8 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import Icon from './Icon';
 import { API_BASE } from '../../lib/constants';
+import { useAppContext } from '../../context/AppContext';
 
 const AddStaffModal = ({ onClose, onAdd, branches, accentColor }) => {
+  const { user } = useAppContext();
+  const savedUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userAuth') || '{}') : {};
+  const token = user?.token || savedUser.token || savedUser.access_token;
+
   const [departments, setDepartments] = useState([]);
   const [data, setData] = useState({
     fullName: '',
@@ -29,7 +34,13 @@ const AddStaffModal = ({ onClose, onAdd, branches, accentColor }) => {
   useEffect(() => {
     const loadDepartments = async () => {
       try {
-        const res = await fetch('http://localhost:3004/api/v1/departments', { credentials: 'include' });
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`${API_BASE}/departments`, { 
+          credentials: 'include',
+          headers
+        });
         if (res.ok) {
           const list = await res.json();
           setDepartments(list);
@@ -98,7 +109,7 @@ const AddStaffModal = ({ onClose, onAdd, branches, accentColor }) => {
       dateOfBirth: data.dateOfBirth,
       address: data.address?.trim() || undefined,
       basicSalary: isSuperAdmin ? undefined : data.basicSalary,
-      department_id: isSuperAdmin ? undefined : data.departmentId,
+      departmentId: isSuperAdmin ? undefined : data.departmentId,
       password: data.password,
     };
     const res = await onAdd(payload);
@@ -107,7 +118,7 @@ const AddStaffModal = ({ onClose, onAdd, branches, accentColor }) => {
       setSuccessData({
         employeeId: res.employee_id,
         email: res.email,
-        password: res.password,
+        password: res.password || data.password,
       });
       setFormMessage('');
     } else {

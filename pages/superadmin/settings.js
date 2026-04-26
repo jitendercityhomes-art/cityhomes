@@ -3,6 +3,7 @@ import SuperAdminLayout from '../../components/layouts/SuperAdminLayout';
 import Icon from '../../components/shared/Icon';
 import { THEME, MONTH_DAYS_MAP, API_BASE } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
+import { getAuthHeaders } from '../../lib/auth';
 
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -144,8 +145,7 @@ const SuperAdminSettings = () => {
     const loadSettings = async () => {
       setLoading(true);
       try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+        const headers = getAuthHeaders(user);
 
         const [salaryRes, holidayRes] = await Promise.all([
           fetch(`${API_BASE}/settings/salary`, {
@@ -244,8 +244,7 @@ const SuperAdminSettings = () => {
 
   const sendOtp = async (type, targetValue) => {
     try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+      const headers = getAuthHeaders(user);
 
       const res = await fetch(`${API_BASE}/otp/send`, {
         method: 'POST',
@@ -272,8 +271,7 @@ const SuperAdminSettings = () => {
       const otp = otpValue.join('');
       if (otp.length < 6) throw new Error('Enter 6-digit OTP');
 
-      const headers = { 'Content-Type': 'application/json' };
-      if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+      const headers = getAuthHeaders(user);
 
       const res = await fetch(`${API_BASE}/otp/verify`, {
         method: 'POST',
@@ -302,8 +300,7 @@ const SuperAdminSettings = () => {
   const finalizeSaveProfile = async () => {
     setAdminSaving(true);
     try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+      const headers = getAuthHeaders(user);
 
       const profileUpdatePayload = {
         name: adminProfile.fullName,
@@ -413,8 +410,7 @@ const SuperAdminSettings = () => {
       setSaving(true);
       setSaveMessage('');
 
-      const headers = { 'Content-Type': 'application/json' };
-      if (user?.token) headers.Authorization = `Bearer ${user.token}`;
+      const headers = getAuthHeaders(user);
 
       // Save salary settings
       const salaryRes = await fetch(`${API_BASE}/settings/salary`, {

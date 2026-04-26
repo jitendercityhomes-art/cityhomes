@@ -7,6 +7,7 @@ import Av from '../../components/shared/Avatar';
 import AddStaffModal from '../../components/shared/AddStaffModal';
 import { THEME, API_BASE } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
+import { getAuthHeaders } from '../../lib/auth';
 
 const SuperAdminEmployees = () => {
   const router = useRouter();
@@ -41,9 +42,11 @@ const SuperAdminEmployees = () => {
 
   const handleAddStaff = async (data) => {
     try {
+      const headers = getAuthHeaders(user);
+
       const response = await fetch(`${API_BASE}/employees`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify(data),
       });
@@ -51,7 +54,10 @@ const SuperAdminEmployees = () => {
       if (response.ok) {
         const newStaff = await response.json();
         try {
-          const employeesRes = await fetch(`${API_BASE}/employees`, { credentials: 'include' });
+          const employeesRes = await fetch(`${API_BASE}/employees`, { 
+            credentials: 'include',
+            headers
+          });
           if (employeesRes.ok) {
             const allStaff = await employeesRes.json();
             setGlobalStaff(allStaff);

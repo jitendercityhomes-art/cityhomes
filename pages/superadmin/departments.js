@@ -5,9 +5,10 @@ import Icon from '../../components/shared/Icon';
 import AlertModal from '../../components/shared/AlertModal';
 import { THEME, API_BASE } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
+import { getAuthHeaders } from '../../lib/auth';
 
 const SuperAdminDepartments = () => {
-  const { addActivity } = useAppContext();
+  const { user, addActivity } = useAppContext();
   const [depts, setDepts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
@@ -57,21 +58,28 @@ const SuperAdminDepartments = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE}/departments`, { credentials: 'include' })
+    const headers = getAuthHeaders(user);
+
+    fetch(`${API_BASE}/departments`, { 
+      credentials: 'include',
+      headers 
+    })
       .then(r => r.json())
       .then(data => setDepts(data))
       .catch(e => console.error(e))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.token]);
 
   const handleAdd = async () => {
     if (!newDept.name) return;
     const url = editingDept ? `${API_BASE}/departments/${editingDept.id}` : `${API_BASE}/departments`;
     const method = editingDept ? 'PATCH' : 'POST';
     try {
+      const headers = getAuthHeaders(user);
+
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify(newDept)
       });
@@ -116,8 +124,11 @@ const SuperAdminDepartments = () => {
     showAlert('confirm', 'Confirm Delete', `Are you sure you want to delete "${dept.name}"? This action cannot be undone.`, async () => {
       closeAlert();
       try {
+        const headers = getAuthHeaders(user);
+
         const res = await fetch(`${API_BASE}/departments/${dept.id}`, {
           method: 'DELETE',
+          headers,
           credentials: 'include'
         });
         if (res.ok) {

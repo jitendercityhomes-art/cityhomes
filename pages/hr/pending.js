@@ -33,7 +33,7 @@ const HRPending = () => {
 
   const handleApprove = async (l) => {
     try {
-      const res = await fetch(`http://localhost:3004/api/v1/leaves/${l.id}/approve`, { 
+      const res = await fetch(`${API_BASE}/leaves/${l.id}/approve`, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -53,7 +53,7 @@ const HRPending = () => {
   const handleReject = async (l) => {
     if (!rejectReason) { alert('Enter reason'); return; }
     try {
-      const res = await fetch(`http://localhost:3004/api/v1/leaves/${l.id}/reject`, {
+      const res = await fetch(`${API_BASE}/leaves/${l.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

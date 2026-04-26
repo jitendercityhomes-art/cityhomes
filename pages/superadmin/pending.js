@@ -5,6 +5,7 @@ import Av from '../../components/shared/Avatar';
 import ReceiptModal from '../../components/shared/ReceiptModal';
 import { THEME, API_BASE } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
+import { getAuthHeaders } from '../../lib/auth';
 
 const SuperAdminPending = () => {
   const { globalLeaves, setGlobalLeaves, globalReimb, setGlobalReimb, addActivity, addEmpNotif, globalStaff } = useAppContext();
@@ -55,9 +56,10 @@ const SuperAdminPending = () => {
 
   const handleApproveLeave = async (l) => {
     try {
+      const headers = getAuthHeaders(user);
       const res = await fetch(`${API_BASE}/leaves/${l.id}/approve`, { 
         method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify({ leave_type: leaveType })
       });
@@ -75,9 +77,10 @@ const SuperAdminPending = () => {
   const handleRejectLeave = async (l) => {
     if (!rejectReason) { alert('Enter reason'); return; }
     try {
+      const headers = getAuthHeaders(user);
       const res = await fetch(`${API_BASE}/leaves/${l.id}/reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify({ reason: rejectReason })
       });
@@ -94,9 +97,11 @@ const SuperAdminPending = () => {
 
   const handleApproveReimb = async (r) => {
     try {
+      const headers = getAuthHeaders(user);
       const res = await fetch(`${API_BASE}/reimbursements/${r.id}/approve`, { 
         method: 'PUT', 
-        credentials: 'include' 
+        credentials: 'include',
+        headers
       });
       if (res.ok) {
         setGlobalReimb(rs => rs.map(x => x.id === r.id ? { ...x, status: 'approved' } : x));

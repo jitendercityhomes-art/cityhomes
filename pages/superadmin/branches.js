@@ -6,7 +6,7 @@ import AddBranchModal from '../../components/shared/AddBranchModal';
 import AlertModal from '../../components/shared/AlertModal';
 import { THEME, API_BASE } from '../../lib/constants';
 import { useAppContext } from '../../context/AppContext';
-
+import { getAuthHeaders } from '../../lib/auth';
 import { useRouter } from 'next/router';
 
 const SuperAdminBranches = () => {
@@ -28,10 +28,11 @@ const SuperAdminBranches = () => {
       const isEdit = !!editingBranch;
       const url = isEdit ? `${API_BASE}/branches/${editingBranch.id}` : `${API_BASE}/branches`;
       const method = isEdit ? 'PUT' : 'POST';
+      const headers = getAuthHeaders(user);
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify(data),
       });
@@ -58,9 +59,11 @@ const SuperAdminBranches = () => {
     showAlert('confirm', 'Delete Branch', `Are you sure you want to delete branch "${name}"?`, async () => {
       closeAlert();
       try {
+        const headers = getAuthHeaders(user);
         const res = await fetch(`${API_BASE}/branches/${id}`, {
           method: 'DELETE',
           credentials: 'include',
+          headers
         });
         if (res.ok) {
           setGlobalBranches(prev => prev.filter(b => b.id !== id));

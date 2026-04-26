@@ -16,10 +16,12 @@ export class AuthController {
     const result = await this.authService.login(req.user);
     
     // Set HTTP-only cookie with JWT token
+    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.DATABASE_URL?.includes('neon');
+    
     res.cookie('jwt', result.access_token, {
       httpOnly: true,
-      secure: true,        // Enable for production HTTPS
-      sameSite: 'none',    // Required for cross-domain cookies
+      secure: isProduction, // Secure only in production (requires HTTPS)
+      sameSite: isProduction ? 'none' : 'lax', // 'none' requires 'secure: true'
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     
