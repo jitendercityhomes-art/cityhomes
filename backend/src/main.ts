@@ -37,7 +37,7 @@ async function bootstrap() {
   ];
 
   app.enableCors({
-    origin: true, // Allow all origins for development
+    origin: ['https://cityhomes-nu.vercel.app', /^http:\/\/localhost:\d+$/],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Origin,X-Requested-With,Content-Type,Accept,Authorization',

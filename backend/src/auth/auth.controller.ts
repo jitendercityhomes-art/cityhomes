@@ -18,8 +18,8 @@ export class AuthController {
     // Set HTTP-only cookie with JWT token
     res.cookie('jwt', result.access_token, {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: 'lax',
+      secure: true,        // Enable for production HTTPS
+      sameSite: 'none',    // Required for cross-domain cookies
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     
