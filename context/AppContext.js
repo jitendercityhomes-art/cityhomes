@@ -375,7 +375,8 @@ export const AppProvider = ({ children }) => {
     refreshSettings,
     isDataLoaded,
     refreshTrigger,
-    triggerRefresh
+    triggerRefresh,
+    API_BASE
   };
 
   useEffect(() => {
